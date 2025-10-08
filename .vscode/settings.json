@@ -1,0 +1,20 @@
+{
+  "css.validate": true,
+  "css.lint.unknownAtRules": "ignore",
+  "scss.validate": true,
+  "scss.lint.unknownAtRules": "ignore",
+  "less.validate": true,
+  "less.lint.unknownAtRules": "ignore",
+  "tailwindCSS.includeLanguages": {
+    "css": "css",
+    "scss": "scss"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "css.customData": [".vscode/css_custom_data.json"],
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "editor.inlayHints.enabled": "off"
+}
