@@ -117,7 +117,10 @@ export default function App() {
   let reajuste = 0;
   let regraAplicada = "";
 
-  if (salary <= cap1) {
+  // Verificar se a data de admissão existe na tabela
+  if (!entry && admission) {
+    regraAplicada = `⚠️ Mês ${monthLabel(admission)} não encontrado na tabela! Adicione esta competência ou ajuste a data.`;
+  } else if (salary <= cap1) {
     reajuste = (salary * percent1) / 100;
     regraAplicada = `Faixa 1 (≤ ${brl(cap1)}): ${pct(percent1)} sobre o salário`;
   } else if (salary <= cap2) {
@@ -210,7 +213,7 @@ export default function App() {
   // Calcular reajuste para CSV
   const calculateCSVReajuste = (salario, admissaoCSV) => {
     const entryCSV = rows.find((r) => r.key === admissaoCSV);
-    if (!entryCSV) return { reajuste: 0, regraAplicada: "Mês não encontrado" };
+    if (!entryCSV) return { reajuste: 0, regraAplicada: "Mês não encontrado na tabela" };
 
     const sal = parseFloat(salario);
     let reaj = 0;
@@ -228,6 +231,28 @@ export default function App() {
     }
 
     return { reajuste: reaj, regraAplicada: regra };
+  };
+
+  // Download exemplo CSV
+  const downloadExampleCSV = () => {
+    const exampleData = [
+      { salario: "5000", admissao: "2025-02" },
+      { salario: "10000", admissao: "2024-12" },
+      { salario: "20000", admissao: "2025-01" },
+      { salario: "3500", admissao: "2024-08" }
+    ];
+    
+    const csv = Papa.unparse(exampleData);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "exemplo-reajuste-seaac.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    setMessage({ type: "success", text: "Exemplo CSV baixado! Use como modelo." });
+    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
   };
 
   const updateRow = (idx, field, value) => {
@@ -450,13 +475,25 @@ export default function App() {
         <section className={`rounded-2xl p-4 shadow ${
           darkMode ? "bg-gray-800" : "bg-white"
         }`}>
-          <h2 className="text-lg font-medium mb-3">Cálculo em Massa (CSV)</h2>
+          <h2 className="text-lg font-medium mb-3">🏢 Cálculo em Massa (Várias Pessoas)</h2>
+          <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-400">
+            <h3 className="font-medium text-blue-800 dark:text-blue-200 mb-2">
+              💡 Como calcular várias pessoas de uma vez:
+            </h3>
+            <ol className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+              <li>1. Baixe o exemplo CSV clicando no botão abaixo</li>
+              <li>2. Edite o arquivo com os dados dos funcionários</li>
+              <li>3. Faça upload do arquivo preenchido</li>
+              <li>4. Veja todos os resultados na tabela</li>
+            </ol>
+          </div>
+          
           <div className="flex flex-col md:flex-row gap-4 items-start">
             <div className="flex-1">
               <label className={`flex flex-col text-sm ${
                 darkMode ? "text-gray-300" : "text-slate-600"
               }`}>
-                <span>Upload de planilha CSV (colunas: salario, admissao)</span>
+                <span>📋 Upload de planilha CSV</span>
                 <input
                   type="file"
                   accept=".csv"
@@ -467,25 +504,49 @@ export default function App() {
               <p className={`text-xs mt-1 ${
                 darkMode ? "text-gray-400" : "text-gray-500"
               }`}>
-                Formato: salario,admissao (ex: 10000,2025-02)
+                <strong>Formato obrigatório:</strong> salario,admissao
+              </p>
+              <p className={`text-xs ${
+                darkMode ? "text-gray-400" : "text-gray-500"
+              }`}>
+                <strong>Exemplo:</strong> 5000,2025-02
               </p>
             </div>
+            <button
+              onClick={downloadExampleCSV}
+              className={`px-4 py-2 rounded-xl shadow transition-colors ${
+                darkMode 
+                  ? "bg-green-600 text-white hover:bg-green-700" 
+                  : "bg-green-500 text-white hover:bg-green-600"
+              }`}
+            >
+              📥 Baixar Exemplo CSV
+            </button>
           </div>
           
           {csvData.length > 0 && (
             <div className="mt-4">
-              <h3 className="font-medium mb-2">Resultados do CSV ({csvData.length} registros):</h3>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium">📊 Resultados ({csvData.length} funcionários):</h3>
+                <button
+                  onClick={() => setCsvData([])}
+                  className="px-3 py-1 rounded-lg bg-red-500 text-white hover:bg-red-600 text-sm"
+                >
+                  Limpar
+                </button>
+              </div>
               <div className="overflow-x-auto max-h-64">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className={`text-left ${
                       darkMode ? "bg-gray-700" : "bg-slate-100"
                     }`}>
-                      <th className="p-2 border">Salário</th>
+                      <th className="p-2 border">#</th>
+                      <th className="p-2 border">Salário Atual</th>
                       <th className="p-2 border">Admissão</th>
-                      <th className="p-2 border">Reajuste</th>
+                      <th className="p-2 border">Valor Reajuste</th>
                       <th className="p-2 border">Novo Salário</th>
-                      <th className="p-2 border">Regra</th>
+                      <th className="p-2 border">Regra Aplicada</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -498,16 +559,45 @@ export default function App() {
                             ? "odd:bg-gray-800 even:bg-gray-700" 
                             : "odd:bg-white even:bg-slate-50"
                         }`}>
+                          <td className="p-2 border font-mono">{idx + 1}</td>
                           <td className="p-2 border">{brl(sal)}</td>
                           <td className="p-2 border">{monthLabel(row.admissao)}</td>
-                          <td className="p-2 border">{brl(reajCSV)}</td>
-                          <td className="p-2 border">{brl(sal + reajCSV)}</td>
+                          <td className="p-2 border font-semibold text-green-600">{brl(reajCSV)}</td>
+                          <td className="p-2 border font-semibold">{brl(sal + reajCSV)}</td>
                           <td className="p-2 border text-xs">{regraCSV}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
+              </div>
+              <div className="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <h4 className="font-medium mb-2">📈 Resumo Geral:</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Total Funcionários:</span>
+                    <div className="font-semibold">{csvData.length}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Total Reajustes:</span>
+                    <div className="font-semibold text-green-600">
+                      {brl(csvData.reduce((acc, row) => {
+                        const { reajuste } = calculateCSVReajuste(row.salario, row.admissao);
+                        return acc + reajuste;
+                      }, 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Folha Nova Total:</span>
+                    <div className="font-semibold">
+                      {brl(csvData.reduce((acc, row) => {
+                        const sal = parseFloat(row.salario);
+                        const { reajuste } = calculateCSVReajuste(row.salario, row.admissao);
+                        return acc + sal + reajuste;
+                      }, 0))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
