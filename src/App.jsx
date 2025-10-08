@@ -431,6 +431,43 @@ export default function App() {
           </div>
         )}
 
+        {/* Período da Tabela Oficial */}
+        <section className={`rounded-2xl p-4 shadow ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}>
+          <h2 className="text-lg font-medium mb-3">📅 Período da Tabela Oficial SEAAC</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 text-sm">
+            {rows.map((row) => (
+              <div
+                key={row.key}
+                className={`p-2 rounded-lg border text-center cursor-pointer transition-colors ${
+                  admission === row.key
+                    ? darkMode
+                      ? "bg-blue-600 border-blue-500 text-white"
+                      : "bg-blue-500 border-blue-400 text-white"
+                    : darkMode
+                      ? "bg-gray-700 border-gray-600 hover:bg-gray-600"
+                      : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+                }`}
+                onClick={() => setAdmission(row.key)}
+                title={`Clique para selecionar ${monthLabel(row.key)}`}
+              >
+                <div className="font-medium">{monthLabel(row.key)}</div>
+                <div className={`text-xs ${
+                  admission === row.key ? "text-blue-100" : "text-gray-500"
+                }`}>
+                  {pct(row.p1)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className={`text-xs mt-3 ${
+            darkMode ? "text-gray-400" : "text-gray-500"
+          }`}>
+            💡 <strong>Clique em qualquer mês</strong> para selecioná-lo automaticamente ou use o campo "Mês/Ano de admissão" abaixo.
+          </p>
+        </section>
+
         {/* Histórico */}
         {showHistory && (
           <section className={`rounded-2xl p-4 shadow ${
@@ -637,8 +674,15 @@ export default function App() {
                       : "bg-white border-gray-300"
                   }`}
                   value={admission}
+                  min="2024-08"
+                  max="2025-07"
                   onChange={(e) => setAdmission(monthKey(e.target.value))}
                 />
+                <span className={`text-xs mt-1 ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}>
+                  Período disponível: Ago/2024 a Jul/2025
+                </span>
               </label>
               <label className="flex flex-col md:col-span-2">
                 <span className={`text-sm ${
@@ -953,8 +997,11 @@ export default function App() {
           <p className={`text-xs mt-2 ${
             darkMode ? "text-gray-400" : "text-slate-500"
           }`}>
-            Dados já preenchidos com a tabela oficial do SEAAC. 
-            Exemplo: <span className="font-medium">Fev/2025 = 3,07% (Faixa 1), 2,69% + R$ 30,59 (Faixa 2), R$ 469,46 (Faixa 3)</span>.
+            <strong>📅 Período da tabela oficial SEAAC:</strong> Agosto/2024 a Julho/2025 (12 meses).
+            <br />
+            <strong>Exemplo:</strong> <span className="font-medium">Fev/2025 = 3,07% (Faixa 1), 2,69% + R$ 30,59 (Faixa 2), R$ 469,46 (Faixa 3)</span>.
+            <br />
+            <strong>💡 Dica:</strong> Para outros períodos, adicione novas linhas com o botão "+ Adicionar mês".
           </p>
         </section>
 
