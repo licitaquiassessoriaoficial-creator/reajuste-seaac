@@ -120,10 +120,25 @@ export default function App() {
   const [rows, setRows] = useState(() => {
     try {
       const saved = localStorage.getItem("reajuste_proporcional_rows");
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsedRows = JSON.parse(saved);
+        // Verifica se tem a estrutura correta, senão recarrega defaults
+        if (parsedRows.length > 0 && parsedRows[0].hasOwnProperty('p1')) {
+          return parsedRows;
+        }
+      }
     } catch (e) {}
+    // Sempre carrega os valores padrão atualizados
     return defaultRows;
   });
+
+  // Função para resetar para valores padrão
+  const resetToDefault = () => {
+    setRows(defaultRows);
+    localStorage.setItem("reajuste_proporcional_rows", JSON.stringify(defaultRows));
+    setMessage({ type: "success", text: "Tabela resetada para valores padrão!" });
+    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+  };
 
   useEffect(() => {
     localStorage.setItem("reajuste_proporcional_rows", JSON.stringify(rows));
@@ -1184,16 +1199,29 @@ export default function App() {
         }`}>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3 gap-2">
             <h2 className="text-lg font-medium">Tabela Proporcional por Mês de Admissão</h2>
-            <button
-              onClick={addRow}
-              className={`px-3 py-2 rounded-xl shadow transition-colors ${
-                darkMode 
-                  ? "bg-blue-600 text-white hover:bg-blue-700" 
-                  : "bg-slate-900 text-white hover:bg-slate-800"
-              }`}
-            >
-              + Adicionar mês
-            </button>
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={resetToDefault}
+                className={`px-3 py-2 rounded-xl shadow transition-colors ${
+                  darkMode 
+                    ? "bg-orange-600 text-white hover:bg-orange-700" 
+                    : "bg-orange-500 text-white hover:bg-orange-600"
+                }`}
+                title="Resetar para valores padrão (2024-2025 preenchidos)"
+              >
+                🔄 Resetar Padrão
+              </button>
+              <button
+                onClick={addRow}
+                className={`px-3 py-2 rounded-xl shadow transition-colors ${
+                  darkMode 
+                    ? "bg-blue-600 text-white hover:bg-blue-700" 
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+              >
+                + Adicionar mês
+              </button>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
