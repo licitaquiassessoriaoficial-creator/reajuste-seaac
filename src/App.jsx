@@ -33,7 +33,7 @@ const monthLabel = (key) => {
 };
 
 // ---- defaults ----
-// Tabela 2024-2025 (Oficial SEAAC)
+// Tabela 2024-2025 (Oficial SEAAC) - Valores da imagem fornecida
 const defaultRows2024_2025 = [
   { key: "2024-08", p1: 6.13, p2: 5.38, fixa2: 61.17, fixo3: 938.91 },
   { key: "2024-09", p1: 5.62, p2: 4.93, fixa2: 56.07, fixo3: 860.67 },
@@ -1040,7 +1040,145 @@ export default function App() {
           </div>
         </section>
 
-        {/* Tabela */}
+        {/* Seção para Editar Anos Anteriores */}
+        <section className={`rounded-2xl p-4 shadow ${
+          darkMode ? "bg-gray-800" : "bg-white"
+        }`}>
+          <h2 className="text-lg font-medium mb-3">✏️ Editar Anos Anteriores</h2>
+          <p className={`text-sm mb-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+            Preencha os valores dos anos anteriores quando encontrar as tabelas oficiais SEAAC.
+          </p>
+
+          {["2023-2024", "2022-2023"].map((periodo) => {
+            const [anoInicial, anoFinal] = periodo.split("-");
+            const mesesPeriodo = rows.filter(row => {
+              const ano = parseInt(row.key.split("-")[0]);
+              return ano >= parseInt(anoInicial) && ano <= parseInt(anoFinal);
+            });
+
+            const temValores = mesesPeriodo.some(row => row.p1 > 0);
+
+            return (
+              <div key={periodo} className={`mb-6 p-4 rounded-lg border-2 ${
+                temValores 
+                  ? darkMode ? "border-green-600 bg-green-900/20" : "border-green-200 bg-green-50"
+                  : darkMode ? "border-orange-600 bg-orange-900/20" : "border-orange-200 bg-orange-50"
+              }`}>
+                <h3 className={`text-md font-medium mb-3 flex items-center gap-2 ${
+                  temValores 
+                    ? darkMode ? "text-green-400" : "text-green-700"
+                    : darkMode ? "text-orange-400" : "text-orange-700"
+                }`}>
+                  {temValores ? "✅" : "📝"} 
+                  Período {periodo}
+                </h3>
+
+                <div className="grid gap-3">
+                  {mesesPeriodo.map((row, idx) => {
+                    const rowIndex = rows.findIndex(r => r.key === row.key);
+                    return (
+                      <div key={row.key} className={`p-3 rounded-md ${
+                        darkMode ? "bg-gray-700" : "bg-white"
+                      } border ${darkMode ? "border-gray-600" : "border-gray-200"}`}>
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-center">
+                          <div className="font-medium">
+                            {monthLabel(row.key)}
+                          </div>
+                          
+                          <div>
+                            <label className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              Faixa 1 (%)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={row.p1 || ""}
+                              onChange={(e) => updateRow(rowIndex, "p1", parseFloat(e.target.value || "0"))}
+                              className={`w-full border px-2 py-1 rounded text-sm ${
+                                darkMode 
+                                  ? "bg-gray-600 border-gray-500 text-white" 
+                                  : "bg-white border-gray-300"
+                              }`}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              Faixa 2 (%)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="100"
+                              value={row.p2 || ""}
+                              onChange={(e) => updateRow(rowIndex, "p2", parseFloat(e.target.value || "0"))}
+                              className={`w-full border px-2 py-1 rounded text-sm ${
+                                darkMode 
+                                  ? "bg-gray-600 border-gray-500 text-white" 
+                                  : "bg-white border-gray-300"
+                              }`}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              Faixa 2 (R$)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={row.fixa2 || ""}
+                              onChange={(e) => updateRow(rowIndex, "fixa2", parseFloat(e.target.value || "0"))}
+                              className={`w-full border px-2 py-1 rounded text-sm ${
+                                darkMode 
+                                  ? "bg-gray-600 border-gray-500 text-white" 
+                                  : "bg-white border-gray-300"
+                              }`}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              Faixa 3 (R$)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={row.fixo3 || ""}
+                              onChange={(e) => updateRow(rowIndex, "fixo3", parseFloat(e.target.value || "0"))}
+                              className={`w-full border px-2 py-1 rounded text-sm ${
+                                darkMode 
+                                  ? "bg-gray-600 border-gray-500 text-white" 
+                                  : "bg-white border-gray-300"
+                              }`}
+                              placeholder="0.00"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className={`mt-3 p-2 rounded-md ${darkMode ? "bg-gray-600" : "bg-gray-100"}`}>
+                  <p className={`text-xs ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                    💡 <strong>Dica:</strong> Encontre os valores oficiais no site do SEAAC em "Acordos Coletivos" → "Tabela de Reajustes {periodo}"
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* Tabela Completa (Visão Avançada) */}
         <section className={`rounded-2xl p-4 shadow ${
           darkMode ? "bg-gray-800" : "bg-white"
         }`}>
