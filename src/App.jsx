@@ -33,7 +33,8 @@ const monthLabel = (key) => {
 };
 
 // ---- defaults ----
-const defaultRows = [
+// Tabela 2024-2025 (Oficial SEAAC)
+const defaultRows2024_2025 = [
   { key: "2024-08", p1: 6.13, p2: 5.38, fixa2: 61.17, fixo3: 938.91 },
   { key: "2024-09", p1: 5.62, p2: 4.93, fixa2: 56.07, fixo3: 860.67 },
   { key: "2024-10", p1: 5.11, p2: 4.48, fixa2: 50.98, fixo3: 782.43 },
@@ -46,6 +47,43 @@ const defaultRows = [
   { key: "2025-05", p1: 1.53, p2: 1.35, fixa2: 15.29, fixo3: 234.73 },
   { key: "2025-06", p1: 1.02, p2: 0.90, fixa2: 10.20, fixo3: 156.49 },
   { key: "2025-07", p1: 0.51, p2: 0.45, fixa2: 5.10, fixo3: 78.24 },
+];
+
+// Template para anos anteriores (valores zerados - preencher quando descobrir)
+const templateYearsToAdd = [
+  // 2023-2024 - PREENCHER COM VALORES REAIS QUANDO DESCOBRIR
+  { key: "2023-08", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-09", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-10", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-11", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-12", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-01", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-02", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-03", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-04", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-05", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-06", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2024-07", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  
+  // 2022-2023 - PREENCHER COM VALORES REAIS QUANDO DESCOBRIR
+  { key: "2022-08", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2022-09", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2022-10", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2022-11", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2022-12", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-01", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-02", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-03", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-04", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-05", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-06", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+  { key: "2023-07", p1: 0, p2: 0, fixa2: 0, fixo3: 0 },
+];
+
+// Combinar todas as tabelas (anos anteriores + atual)
+const defaultRows = [
+  ...templateYearsToAdd,
+  ...defaultRows2024_2025
 ];
 
 export default function App() {
@@ -255,6 +293,27 @@ export default function App() {
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
   };
 
+  // Função para preencher anos anteriores (quando descobrir os valores)
+  const preencherAnoAnterior = (ano, valores) => {
+    // Exemplo de uso: preencherAnoAnterior("2023", arrayComValores2023)
+    const mesesAno = [
+      `${ano}-08`, `${ano}-09`, `${ano}-10`, `${ano}-11`, `${ano}-12`,
+      `${parseInt(ano) + 1}-01`, `${parseInt(ano) + 1}-02`, `${parseInt(ano) + 1}-03`, 
+      `${parseInt(ano) + 1}-04`, `${parseInt(ano) + 1}-05`, `${parseInt(ano) + 1}-06`, `${parseInt(ano) + 1}-07`
+    ];
+    
+    setRows(prev => prev.map(row => {
+      const index = mesesAno.indexOf(row.key);
+      if (index !== -1 && valores[index]) {
+        return { ...row, ...valores[index] };
+      }
+      return row;
+    }));
+    
+    setMessage({ type: "success", text: `Valores do ano ${ano}-${parseInt(ano) + 1} atualizados!` });
+    setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+  };
+
   const updateRow = (idx, field, value) => {
     // Validação para meses repetidos
     if (field === "key") {
@@ -435,36 +494,150 @@ export default function App() {
         <section className={`rounded-2xl p-4 shadow ${
           darkMode ? "bg-gray-800" : "bg-white"
         }`}>
-          <h2 className="text-lg font-medium mb-3">📅 Período da Tabela Oficial SEAAC</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 text-sm">
-            {rows.map((row) => (
-              <div
-                key={row.key}
-                className={`p-2 rounded-lg border text-center cursor-pointer transition-colors ${
-                  admission === row.key
-                    ? darkMode
-                      ? "bg-blue-600 border-blue-500 text-white"
-                      : "bg-blue-500 border-blue-400 text-white"
-                    : darkMode
-                      ? "bg-gray-700 border-gray-600 hover:bg-gray-600"
-                      : "bg-gray-50 border-gray-200 hover:bg-gray-100"
-                }`}
-                onClick={() => setAdmission(row.key)}
-                title={`Clique para selecionar ${monthLabel(row.key)}`}
-              >
-                <div className="font-medium">{monthLabel(row.key)}</div>
-                <div className={`text-xs ${
-                  admission === row.key ? "text-blue-100" : "text-gray-500"
+          <h2 className="text-lg font-medium mb-3">📅 Tabela de Reajustes SEAAC</h2>
+          
+          {/* Separar por anos */}
+          {["2024-2025", "2023-2024", "2022-2023"].map((periodo) => {
+            const [anoInicial, anoFinal] = periodo.split("-");
+            const mesesPeriodo = rows.filter(row => {
+              const ano = parseInt(row.key.split("-")[0]);
+              return ano >= parseInt(anoInicial) && ano <= parseInt(anoFinal);
+            });
+
+            const temValores = mesesPeriodo.some(row => row.p1 > 0);
+            
+            return (
+              <div key={periodo} className="mb-4">
+                <h3 className={`text-sm font-medium mb-2 flex items-center gap-2 ${
+                  temValores 
+                    ? darkMode ? "text-green-400" : "text-green-600"
+                    : darkMode ? "text-yellow-400" : "text-orange-600"
                 }`}>
-                  {pct(row.p1)}
+                  {temValores ? "✅" : "⚠️"} 
+                  {periodo} ({temValores ? "Valores Preenchidos" : "Aguardando Valores"})
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 text-sm">
+                  {mesesPeriodo.map((row) => (
+                    <div
+                      key={row.key}
+                      className={`p-2 rounded-lg border text-center cursor-pointer transition-colors ${
+                        admission === row.key
+                          ? darkMode
+                            ? "bg-blue-600 border-blue-500 text-white"
+                            : "bg-blue-500 border-blue-400 text-white"
+                          : row.p1 > 0
+                            ? darkMode
+                              ? "bg-green-800 border-green-600 hover:bg-green-700"
+                              : "bg-green-50 border-green-200 hover:bg-green-100"
+                            : darkMode
+                              ? "bg-yellow-800 border-yellow-600 hover:bg-yellow-700"
+                              : "bg-orange-50 border-orange-200 hover:bg-orange-100"
+                      }`}
+                      onClick={() => setAdmission(row.key)}
+                      title={`${monthLabel(row.key)} - ${row.p1 > 0 ? `${pct(row.p1)}` : "Sem valores"}`}
+                    >
+                      <div className="font-medium">{monthLabel(row.key)}</div>
+                      <div className={`text-xs ${
+                        admission === row.key 
+                          ? "text-blue-100" 
+                          : row.p1 > 0 
+                            ? "text-green-600" 
+                            : "text-orange-500"
+                      }`}>
+                        {row.p1 > 0 ? pct(row.p1) : "0%"}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            );
+          })}
+
+          <div className={`p-3 rounded-lg border-l-4 border-blue-400 ${
+            darkMode ? "bg-blue-900/30" : "bg-blue-50"
+          }`}>
+            <h4 className={`font-medium ${darkMode ? "text-blue-200" : "text-blue-800"}`}>
+              💡 Como Preencher Anos Anteriores:
+            </h4>
+            <ol className={`text-sm mt-2 space-y-1 ${darkMode ? "text-blue-300" : "text-blue-700"}`}>
+              <li>1. <strong>Acesse:</strong> site oficial do SEAAC (seaac.com.br)</li>
+              <li>2. <strong>Procure:</strong> "Acordos Coletivos" ou "Convenções"</li>
+              <li>3. <strong>Baixe:</strong> tabelas de reajuste dos anos anteriores</li>
+              <li>4. <strong>Edite:</strong> os valores na tabela abaixo (meses com 0%)</li>
+            </ol>
+            
+            {/* Botões para desenvolvedores testarem */}
+            <div className={`mt-3 p-2 rounded-md ${darkMode ? "bg-gray-800" : "bg-gray-100"}`}>
+              <p className={`text-xs mb-2 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                🔧 <strong>Para desenvolvedores:</strong> teste preenchimento automático
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                <button
+                  onClick={() => {
+                    // Exemplo: preencher 2023 com valores de exemplo
+                    const valores2023 = [
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // ago/2023
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // set/2023
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // out/2023
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // nov/2023
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // dez/2023
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // jan/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // fev/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // mar/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // abr/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // mai/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // jun/2024
+                      {p1: 0.0485, p2: 0.0292, p3: 0.0146}, // jul/2024
+                    ];
+                    preencherAnoAnterior("2023", valores2023);
+                  }}
+                  className={`px-2 py-1 text-xs rounded-md ${
+                    darkMode 
+                      ? "bg-yellow-700 hover:bg-yellow-600 text-yellow-100" 
+                      : "bg-yellow-200 hover:bg-yellow-300 text-yellow-800"
+                  }`}
+                >
+                  Teste 2023
+                </button>
+                <button
+                  onClick={() => {
+                    // Exemplo: preencher 2022 com valores de exemplo  
+                    const valores2022 = [
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // ago/2022
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // set/2022
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // out/2022
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // nov/2022
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // dez/2022
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // jan/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // fev/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // mar/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // abr/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // mai/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // jun/2023
+                      {p1: 0.0420, p2: 0.0252, p3: 0.0126}, // jul/2023
+                    ];
+                    preencherAnoAnterior("2022", valores2022);
+                  }}
+                  className={`px-2 py-1 text-xs rounded-md ${
+                    darkMode 
+                      ? "bg-purple-700 hover:bg-purple-600 text-purple-100" 
+                      : "bg-purple-200 hover:bg-purple-300 text-purple-800"
+                  }`}
+                >
+                  Teste 2022
+                </button>
+              </div>
+              <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+                * Valores de exemplo apenas para demonstração
+              </p>
+            </div>
           </div>
+          
           <p className={`text-xs mt-3 ${
             darkMode ? "text-gray-400" : "text-gray-500"
           }`}>
-            💡 <strong>Clique em qualquer mês</strong> para selecioná-lo automaticamente ou use o campo "Mês/Ano de admissão" abaixo.
+            💡 <strong>Clique em qualquer mês</strong> para selecioná-lo automaticamente. 
+            <strong>Verde</strong> = valores preenchidos, <strong>Laranja</strong> = aguardando valores.
           </p>
         </section>
 
