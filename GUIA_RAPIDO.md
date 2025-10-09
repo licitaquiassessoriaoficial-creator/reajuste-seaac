@@ -7,11 +7,13 @@
 ## 🚀 COMO USAR
 
 ### ✅ **CÁLCULO INDIVIDUAL**
+
 1. Digite o **salário atual**
 2. Clique no **mês de admissão** na tabela
 3. Veja o **resultado** automaticamente
 
 ### ✅ **CÁLCULO EM MASSA**
+
 1. Clique **"📥 Baixar Exemplo CSV"**
 2. Edite com seus dados
 3. Faça **upload** do arquivo
@@ -55,4 +57,4 @@
 
 ---
 
-*📌 Calculadora gratuita, online e sempre atualizada*
+Calculadora gratuita, online e sempre atualizada
