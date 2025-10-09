@@ -514,9 +514,21 @@ export default function App() {
           {/* Separar por anos */}
           {["2024-2025", "2023-2024", "2022-2023"].map((periodo) => {
             const [anoInicial, anoFinal] = periodo.split("-");
+            
+            // Filtro correto por período acadêmico (agosto a julho)
             const mesesPeriodo = rows.filter(row => {
-              const ano = parseInt(row.key.split("-")[0]);
-              return ano >= parseInt(anoInicial) && ano <= parseInt(anoFinal);
+              const [ano, mes] = row.key.split("-");
+              const anoNum = parseInt(ano);
+              const mesNum = parseInt(mes);
+              
+              if (periodo === "2024-2025") {
+                return (anoNum === 2024 && mesNum >= 8) || (anoNum === 2025 && mesNum <= 7);
+              } else if (periodo === "2023-2024") {
+                return (anoNum === 2023 && mesNum >= 8) || (anoNum === 2024 && mesNum <= 7);
+              } else if (periodo === "2022-2023") {
+                return (anoNum === 2022 && mesNum >= 8) || (anoNum === 2023 && mesNum <= 7);
+              }
+              return false;
             });
 
             const temValores = mesesPeriodo.some(row => row.p1 > 0);
@@ -1066,9 +1078,19 @@ export default function App() {
 
           {["2023-2024", "2022-2023"].map((periodo) => {
             const [anoInicial, anoFinal] = periodo.split("-");
+            
+            // Filtro correto por período acadêmico (agosto a julho)
             const mesesPeriodo = rows.filter(row => {
-              const ano = parseInt(row.key.split("-")[0]);
-              return ano >= parseInt(anoInicial) && ano <= parseInt(anoFinal);
+              const [ano, mes] = row.key.split("-");
+              const anoNum = parseInt(ano);
+              const mesNum = parseInt(mes);
+              
+              if (periodo === "2023-2024") {
+                return (anoNum === 2023 && mesNum >= 8) || (anoNum === 2024 && mesNum <= 7);
+              } else if (periodo === "2022-2023") {
+                return (anoNum === 2022 && mesNum >= 8) || (anoNum === 2023 && mesNum <= 7);
+              }
+              return false;
             });
 
             const temValores = mesesPeriodo.some(row => row.p1 > 0);
