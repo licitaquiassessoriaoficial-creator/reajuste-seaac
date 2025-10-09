@@ -91,6 +91,7 @@ export default function App() {
   const [salary, setSalary] = useState(0);
   const [admission, setAdmission] = useState("2025-02");
   const [baseDate, setBaseDate] = useState("2025-08");
+  const [retroativeMonths, setRetroativeMonths] = useState(2);
 
   // estados para mensagens
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -192,6 +193,8 @@ export default function App() {
   }
 
   const novoSalario = salary + reajuste;
+  const valorRetroativo = reajuste * retroativeMonths;
+  const totalAPagar = valorRetroativo;
 
   // Salvar cálculo no histórico
   const saveToHistory = () => {
@@ -204,7 +207,10 @@ export default function App() {
         reajuste,
         novoSalario,
         regraAplicada,
-        baseDate: monthLabel(baseDate)
+        baseDate: monthLabel(baseDate),
+        retroativeMonths,
+        valorRetroativo,
+        totalAPagar
       };
       setHistory(prev => [calculation, ...prev.slice(0, 49)]); // Manter apenas 50 últimos
       setMessage({ type: "success", text: "Cálculo salvo no histórico!" });
@@ -273,7 +279,11 @@ export default function App() {
   // Calcular reajuste para CSV
   const calculateCSVReajuste = (salario, admissaoCSV) => {
     const entryCSV = rows.find((r) => r.key === admissaoCSV);
-    if (!entryCSV) return { reajuste: 0, regraAplicada: "Mês não encontrado na tabela" };
+    if (!entryCSV) return { 
+      reajuste: 0, 
+      regraAplicada: "Mês não encontrado na tabela",
+      valorRetroativo: 0 
+    };
 
     const sal = parseFloat(salario);
     let reaj = 0;
@@ -290,7 +300,13 @@ export default function App() {
       regra = `Faixa 3: R$ ${entryCSV.fixo3}`;
     }
 
-    return { reajuste: reaj, regraAplicada: regra };
+    const retroativo = reaj * retroativeMonths;
+
+    return { 
+      reajuste: reaj, 
+      regraAplicada: regra,
+      valorRetroativo: retroativo
+    };
   };
 
   // Download exemplo CSV
@@ -722,6 +738,12 @@ export default function App() {
                       <div><strong>Admissão:</strong> {calc.admission}</div>
                       <div><strong>Salário:</strong> {brl(calc.salary)}</div>
                       <div><strong>Reajuste:</strong> {brl(calc.reajuste)}</div>
+                      {calc.retroativeMonths > 0 && (
+                        <>
+                          <div><strong>Retroativo:</strong> {calc.retroativeMonths} meses</div>
+                          <div><strong>Total Retroativo:</strong> {brl(calc.valorRetroativo || 0)}</div>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))
@@ -819,15 +841,16 @@ export default function App() {
                       <th className="p-2 border">#</th>
                       <th className="p-2 border">Salário Atual</th>
                       <th className="p-2 border">Admissão</th>
-                      <th className="p-2 border">Valor Reajuste</th>
+                      <th className="p-2 border">Reajuste Mensal</th>
                       <th className="p-2 border">Novo Salário</th>
+                      <th className="p-2 border">Retroativo ({retroativeMonths}m)</th>
                       <th className="p-2 border">Regra Aplicada</th>
                     </tr>
                   </thead>
                   <tbody>
                     {csvData.map((row, idx) => {
                       const sal = parseFloat(row.salario);
-                      const { reajuste: reajCSV, regraAplicada: regraCSV } = calculateCSVReajuste(row.salario, row.admissao);
+                      const { reajuste: reajCSV, regraAplicada: regraCSV, valorRetroativo: retroCSV } = calculateCSVReajuste(row.salario, row.admissao);
                       return (
                         <tr key={idx} className={`${
                           darkMode 
@@ -837,8 +860,9 @@ export default function App() {
                           <td className="p-2 border font-mono">{idx + 1}</td>
                           <td className="p-2 border">{brl(sal)}</td>
                           <td className="p-2 border">{monthLabel(row.admissao)}</td>
-                          <td className="p-2 border font-semibold text-green-600">{brl(reajCSV)}</td>
+                          <td className="p-2 border font-semibold text-blue-600">{brl(reajCSV)}</td>
                           <td className="p-2 border font-semibold">{brl(sal + reajCSV)}</td>
+                          <td className="p-2 border font-semibold text-green-600">{brl(retroCSV)}</td>
                           <td className="p-2 border text-xs">{regraCSV}</td>
                         </tr>
                       );
@@ -848,17 +872,26 @@ export default function App() {
               </div>
               <div className="mt-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
                 <h4 className="font-medium mb-2">📈 Resumo Geral:</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600 dark:text-gray-400">Total Funcionários:</span>
                     <div className="font-semibold">{csvData.length}</div>
                   </div>
                   <div>
-                    <span className="text-gray-600 dark:text-gray-400">Total Reajustes:</span>
-                    <div className="font-semibold text-green-600">
+                    <span className="text-gray-600 dark:text-gray-400">Total Reajustes Mensais:</span>
+                    <div className="font-semibold text-blue-600">
                       {brl(csvData.reduce((acc, row) => {
                         const { reajuste } = calculateCSVReajuste(row.salario, row.admissao);
                         return acc + reajuste;
+                      }, 0))}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Total Retroativos ({retroativeMonths}m):</span>
+                    <div className="font-semibold text-green-600">
+                      {brl(csvData.reduce((acc, row) => {
+                        const { valorRetroativo } = calculateCSVReajuste(row.salario, row.admissao);
+                        return acc + valorRetroativo;
                       }, 0))}
                     </div>
                   </div>
@@ -937,6 +970,28 @@ export default function App() {
                   value={salary}
                   onChange={(e) => setSalary(parseFloat(e.target.value || "0"))}
                 />
+              </label>
+              <label className="flex flex-col">
+                <span className={`text-sm ${
+                  darkMode ? "text-gray-300" : "text-slate-600"
+                }`}>Meses retroativos</span>
+                <input
+                  type="number"
+                  min="0"
+                  max="12"
+                  className={`border px-3 py-2 rounded-lg ${
+                    darkMode 
+                      ? "bg-gray-700 border-gray-600 text-white" 
+                      : "bg-white border-gray-300"
+                  }`}
+                  value={retroativeMonths}
+                  onChange={(e) => setRetroativeMonths(parseInt(e.target.value || "0"))}
+                />
+                <span className={`text-xs mt-1 ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
+                }`}>
+                  Quantos meses de retroativo pagar
+                </span>
               </label>
             </div>
           </div>
@@ -1077,7 +1132,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-4">
             <div className={`p-3 rounded-xl border ${
               darkMode ? "bg-gray-700 border-gray-600" : "bg-slate-50 border-gray-200"
             }`}>
@@ -1091,7 +1146,7 @@ export default function App() {
             }`}>
               <div className={`text-xs ${
                 darkMode ? "text-gray-400" : "text-slate-500"
-              }`}>Valor do reajuste</div>
+              }`}>Valor do reajuste (mensal)</div>
               <div className="text-lg font-semibold">{brl(reajuste)}</div>
             </div>
             <div className={`p-3 rounded-xl border ${
@@ -1102,7 +1157,78 @@ export default function App() {
               }`}>Novo salário</div>
               <div className="text-lg font-semibold">{brl(novoSalario)}</div>
             </div>
+            <div className={`p-3 rounded-xl border ${
+              darkMode ? "bg-orange-700 border-orange-600" : "bg-orange-50 border-orange-200"
+            }`}>
+              <div className={`text-xs ${
+                darkMode ? "text-orange-300" : "text-orange-600"
+              }`}>Meses retroativos</div>
+              <div className="text-lg font-semibold">{retroativeMonths} meses</div>
+            </div>
           </div>
+
+          {/* Nova seção para mostrar o retroativo */}
+          {retroativeMonths > 0 && (
+            <div className={`mt-4 p-4 rounded-xl border-2 ${
+              darkMode ? "bg-green-900/30 border-green-600" : "bg-green-50 border-green-400"
+            }`}>
+              <h3 className={`text-lg font-semibold mb-3 flex items-center gap-2 ${
+                darkMode ? "text-green-300" : "text-green-700"
+              }`}>
+                💰 Cálculo do Retroativo
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className={`p-3 rounded-lg ${
+                  darkMode ? "bg-green-800/50" : "bg-white"
+                }`}>
+                  <div className={`text-xs ${
+                    darkMode ? "text-green-200" : "text-green-600"
+                  }`}>Reajuste mensal</div>
+                  <div className="text-lg font-semibold">{brl(reajuste)}</div>
+                </div>
+                <div className={`p-3 rounded-lg ${
+                  darkMode ? "bg-green-800/50" : "bg-white"
+                }`}>
+                  <div className={`text-xs ${
+                    darkMode ? "text-green-200" : "text-green-600"
+                  }`}>× {retroativeMonths} meses</div>
+                  <div className="text-sm font-medium">{brl(reajuste)} × {retroativeMonths}</div>
+                </div>
+                <div className={`p-3 rounded-lg ${
+                  darkMode ? "bg-green-800/50" : "bg-white"
+                }`}>
+                  <div className={`text-xs ${
+                    darkMode ? "text-green-200" : "text-green-600"
+                  }`}>Total retroativo</div>
+                  <div className="text-xl font-bold text-green-600">{brl(valorRetroativo)}</div>
+                </div>
+              </div>
+              
+              {/* Resumo do que pagar */}
+              <div className={`mt-4 p-3 rounded-lg ${
+                darkMode ? "bg-gray-800 border border-gray-600" : "bg-gray-100 border border-gray-300"
+              }`}>
+                <h4 className={`font-semibold mb-2 ${
+                  darkMode ? "text-gray-200" : "text-gray-700"
+                }`}>📋 Resumo dos Valores a Pagar:</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span>Retroativo ({retroativeMonths} meses):</span>
+                    <span className="font-bold text-green-600">{brl(valorRetroativo)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Novo salário mensal (a partir de agora):</span>
+                    <span className="font-bold">{brl(novoSalario)}</span>
+                  </div>
+                  <hr className={`my-2 ${darkMode ? "border-gray-600" : "border-gray-300"}`} />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Total do retroativo:</span>
+                    <span className="text-green-600">{brl(totalAPagar)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Seção para Editar Anos Anteriores */}
