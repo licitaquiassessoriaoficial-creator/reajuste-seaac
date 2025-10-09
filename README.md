@@ -2,7 +2,7 @@
 
 Uma ferramenta moderna e gratuita para calcular reajustes salariais proporcionais conforme a convenção coletiva do SEAAC.
 
-🌐 **Acesse:** https://calculadora-reajuste.netlify.app/
+🌐 **Acesse:** <https://calculadora-reajuste.netlify.app/>
 
 ## 🎯 Funcionalidades
 

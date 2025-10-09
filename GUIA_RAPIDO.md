@@ -1,6 +1,6 @@
 # 🧮 GUIA RÁPIDO - Calculadora SEAAC
 
-**🌐 Link:** https://calculadora-reajuste.netlify.app/
+**🌐 Link:** <https://calculadora-reajuste.netlify.app/>
 
 ---
 
@@ -49,8 +49,8 @@
 
 ## 📞 SUPORTE
 
-**Site:** calculadora-reajuste.netlify.app  
-**SEAAC:** seaac.com.br  
+**Site:** <calculadora-reajuste.netlify.app>  
+**SEAAC:** <seaac.com.br>  
 **Tabela:** 2024-2025 (Atualizada Out/2025)
 
 ---

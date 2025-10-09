@@ -4,7 +4,7 @@
 
 A **Calculadora de Reajuste Proporcional SEAAC** é uma ferramenta online que calcula automaticamente o reajuste salarial proporcional conforme a convenção coletiva do SEAAC, considerando o mês de admissão do funcionário.
 
-**🌐 Acesse em:** https://calculadora-reajuste.netlify.app/
+**🌐 Acesse em:** <https://calculadora-reajuste.netlify.app/>
 
 ---
 
@@ -131,8 +131,9 @@ A **Calculadora de Reajuste Proporcional SEAAC** é uma ferramenta online que ca
 ## 📞 Suporte e Contato
 
 ### **🌐 Links Úteis**
-- **Calculadora:** https://calculadora-reajuste.netlify.app/
-- **Site SEAAC:** seaac.com.br
+
+- **Calculadora:** <https://calculadora-reajuste.netlify.app/>
+- **Site SEAAC:** <seaac.com.br>
 - **Convenções Coletivas:** Consulte no site oficial do SEAAC
 
 ### **📝 Informações Técnicas**
