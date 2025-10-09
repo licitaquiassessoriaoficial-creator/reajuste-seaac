@@ -302,8 +302,23 @@ export default function App() {
       { salario: "3500", admissao: "2024-08" }
     ];
     
-    const csv = Papa.unparse(exampleData);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    // Configuração para garantir CSV correto
+    const csv = Papa.unparse(exampleData, {
+      delimiter: ",",
+      header: true,
+      quotes: false,
+      quoteChar: '"',
+      escapeChar: '"',
+      skipEmptyLines: true,
+      transform: {
+        salario: (value) => value,
+        admissao: (value) => value
+      }
+    });
+    
+    // Adiciona BOM para UTF-8 (resolve problemas de codificação)
+    const BOM = "\uFEFF";
+    const blob = new Blob([BOM + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -730,6 +745,22 @@ export default function App() {
               <li>3. Faça upload do arquivo preenchido</li>
               <li>4. Veja todos os resultados na tabela</li>
             </ol>
+            
+            <div className={`mt-3 p-3 rounded-md ${darkMode ? "bg-gray-700" : "bg-gray-100"}`}>
+              <p className={`text-xs font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                📋 <strong>Formato do CSV:</strong>
+              </p>
+              <code className={`text-xs ${darkMode ? "text-green-400" : "text-green-700"}`}>
+                salario,admissao<br/>
+                5000,2025-02<br/>
+                10000,2024-12<br/>
+                20000,2025-01
+              </code>
+              <p className={`text-xs mt-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                • <strong>salario</strong>: valor numérico (ex: 5000)<br/>
+                • <strong>admissao</strong>: formato AAAA-MM (ex: 2025-02)
+              </p>
+            </div>
           </div>
           
           <div className="flex flex-col md:flex-row gap-4 items-start">
