@@ -86,11 +86,6 @@ const defaultRows = [
   ...defaultRows2024_2025
 ];
 
-// Debug: verificar se os dados estão corretos
-console.log("defaultRows2024_2025:", defaultRows2024_2025);
-console.log("templateYearsToAdd:", templateYearsToAdd);
-console.log("defaultRows final:", defaultRows);
-
 export default function App() {
   // principais
   const [salary, setSalary] = useState(0);
@@ -139,9 +134,6 @@ export default function App() {
 
   // Função para resetar para valores padrão
   const resetToDefault = () => {
-    console.log("Resetando para valores padrão...");
-    console.log("defaultRows:", defaultRows);
-    
     // Limpa localStorage
     localStorage.removeItem("reajuste_proporcional_rows");
     
@@ -153,14 +145,6 @@ export default function App() {
     
     setMessage({ type: "success", text: "Tabela resetada para valores padrão!" });
     setTimeout(() => setMessage({ type: "", text: "" }), 3000);
-    
-    console.log("Reset concluído. Novos rows:", defaultRows);
-  };
-
-  // Função para limpar completamente o localStorage (debug)
-  const limparTudoLocalStorage = () => {
-    localStorage.clear();
-    window.location.reload();
   };
 
   useEffect(() => {
@@ -1255,17 +1239,6 @@ export default function App() {
                 title="Resetar para valores padrão (2024-2025 preenchidos)"
               >
                 🔄 Resetar Padrão
-              </button>
-              <button
-                onClick={limparTudoLocalStorage}
-                className={`px-3 py-2 rounded-xl shadow transition-colors ${
-                  darkMode 
-                    ? "bg-red-600 text-white hover:bg-red-700" 
-                    : "bg-red-500 text-white hover:bg-red-600"
-                }`}
-                title="Limpar tudo e recarregar (DEBUG)"
-              >
-                🗑️ Limpar Tudo
               </button>
               <button
                 onClick={addRow}
