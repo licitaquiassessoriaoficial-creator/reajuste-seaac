@@ -107,8 +107,8 @@ const defaultRows = [
 export default function App() {
   // principais
   const [salary, setSalary] = useState(0);
-  const [admission, setAdmission] = useState("2024-08"); // Período de admissão
-  const [baseDate, setBaseDate] = useState("2024-08"); // Data-base (01/08/2024)
+  const [admission, setAdmission] = useState("2025-06"); // Período de admissão (Junho/2025 como exemplo)
+  const [baseDate, setBaseDate] = useState("2025-08"); // Data-base (01/08/2025)
   const [retroativeMonths, setRetroativeMonths] = useState(2);
 
   // estados para mensagens
@@ -632,8 +632,8 @@ export default function App() {
               <p className={`text-sm ${
                 darkMode ? "text-green-300" : "text-green-600"
               }`}>
-                <strong>De:</strong> 1º de agosto de 2024<br/>
-                <strong>Até:</strong> 31 de julho de 2025
+                <strong>De:</strong> 1º de agosto de 2025<br/>
+                <strong>Até:</strong> 31 de julho de 2026
               </p>
             </div>
             
@@ -1177,7 +1177,7 @@ export default function App() {
                 <span className={`text-xs mt-1 ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}>
-                  Período disponível: Ago/2024 a Jul/2025
+                  Período disponível: Ago/2025 a Jul/2026
                 </span>
               </label>
               <label className="flex flex-col md:col-span-2">
@@ -1240,7 +1240,7 @@ export default function App() {
             darkMode ? "bg-gray-800" : "bg-white"
           }`}>
             <h2 className="text-lg font-medium mb-3">Limites por Faixa</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <label className="flex flex-col">
                 <span className={`text-sm ${
                   darkMode ? "text-gray-300" : "text-slate-600"
@@ -1271,6 +1271,22 @@ export default function App() {
                   }`}
                   value={cap2}
                   onChange={(e) => setCap2(parseFloat(e.target.value || "0"))}
+                />
+              </label>
+              <label className="flex flex-col">
+                <span className={`text-sm ${
+                  darkMode ? "text-gray-300" : "text-slate-600"
+                }`}>Cap 3 (&gt;)</span>
+                <input
+                  type="text"
+                  className={`border px-3 py-2 rounded-lg ${
+                    darkMode 
+                      ? "bg-gray-700 border-gray-600 text-gray-400" 
+                      : "bg-gray-100 border-gray-300 text-gray-500"
+                  }`}
+                  value={`${brl(cap2)} +`}
+                  readOnly
+                  disabled
                 />
               </label>
             </div>
