@@ -167,19 +167,45 @@ export default function App() {
     localStorage.setItem("reajuste_history", JSON.stringify(history));
   }, [history]);
 
+  // Verificar se a admissão é antes da data base (01/08/2024)
+  const dataBase = new Date("2024-08-01");
+  const [anoAdm, mesAdm] = admission.split("-").map(x => parseInt(x));
+  const dataAdmissao = new Date(anoAdm, mesAdm - 1, 1);
+  const isAntesDaDataBase = dataAdmissao < dataBase;
+
   // pegar a linha de referência
   const entry = rows.find((r) => r.key === admission);
+  
+  // Para funcionários antes da data base, usar a entrada de agosto/2024 (12 meses completos)
+  const entryParaCalculo = isAntesDaDataBase ? 
+    rows.find((r) => r.key === "2024-08") || rows[0] : 
+    entry;
 
-  const percent1 = entry?.p1 ?? 0;
-  const percent2 = entry?.p2 ?? 0;
-  const parcelaFixa2 = entry?.fixa2 ?? 0;
-  const valorFixo3 = entry?.fixo3 ?? 0;
+  const percent1 = entryParaCalculo?.p1 ?? 0;
+  const percent2 = entryParaCalculo?.p2 ?? 0;
+  const parcelaFixa2 = entryParaCalculo?.fixa2 ?? 0;
+  const valorFixo3 = entryParaCalculo?.fixo3 ?? 0;
 
   let reajuste = 0;
   let regraAplicada = "";
+  
+  // Calcular meses retroativos: 12 para antes da data base, senão usar configurado
+  const mesesRetroativosCalculados = isAntesDaDataBase ? 12 : retroativeMonths;
 
   // Verificar se a data de admissão existe na tabela
-  if (!entry && admission) {
+  if (isAntesDaDataBase) {
+    // Funcionários antes de 01/08/2024 = 12 meses de retroativo
+    if (salary <= cap1) {
+      reajuste = (salary * percent1) / 100;
+      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 1: ${pct(percent1)} × 12 meses`;
+    } else if (salary <= cap2) {
+      reajuste = (salary * percent2) / 100 + parcelaFixa2;
+      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 2: ${pct(percent2)} + ${brl(parcelaFixa2)} × 12 meses`;
+    } else {
+      reajuste = valorFixo3;
+      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 3: ${brl(valorFixo3)} × 12 meses`;
+    }
+  } else if (!entry && admission) {
     regraAplicada = `⚠️ Mês ${monthLabel(admission)} não encontrado na tabela! Adicione esta competência ou ajuste a data.`;
   } else if (salary <= cap1) {
     reajuste = (salary * percent1) / 100;
@@ -193,7 +219,7 @@ export default function App() {
   }
 
   const novoSalario = salary + reajuste;
-  const valorRetroativo = reajuste * retroativeMonths;
+  const valorRetroativo = reajuste * mesesRetroativosCalculados;
   const totalAPagar = valorRetroativo;
 
   // Salvar cálculo no histórico
@@ -208,7 +234,7 @@ export default function App() {
         novoSalario,
         regraAplicada,
         baseDate: monthLabel(baseDate),
-        retroativeMonths,
+        retroativeMonths: mesesRetroativosCalculados,
         valorRetroativo,
         totalAPagar
       };
@@ -990,9 +1016,22 @@ export default function App() {
                 <span className={`text-xs mt-1 ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}>
-                  Quantos meses de retroativo pagar
+                  Para admissões após 01/08/2024
                 </span>
               </label>
+            </div>
+            
+            {/* Aviso sobre regra de retroativo */}
+            <div className={`mt-3 p-3 rounded-lg border-l-4 border-blue-400 ${
+              darkMode ? "bg-blue-900/30" : "bg-blue-50"
+            }`}>
+              <h4 className={`font-medium ${darkMode ? "text-blue-200" : "text-blue-800"}`}>
+                📋 Regra SEAAC - Retroativo:
+              </h4>
+              <ul className={`text-sm mt-2 space-y-1 ${darkMode ? "text-blue-300" : "text-blue-700"}`}>
+                <li><strong>Antes de 01/08/2024:</strong> Sempre 12 meses de retroativo (reajuste integral)</li>
+                <li><strong>Após 01/08/2024:</strong> Tabela proporcional + meses configurados acima</li>
+              </ul>
             </div>
           </div>
 
@@ -1163,12 +1202,19 @@ export default function App() {
               <div className={`text-xs ${
                 darkMode ? "text-orange-300" : "text-orange-600"
               }`}>Meses retroativos</div>
-              <div className="text-lg font-semibold">{retroativeMonths} meses</div>
+              <div className="text-lg font-semibold">{mesesRetroativosCalculados} meses</div>
+              {isAntesDaDataBase && (
+                <div className={`text-xs mt-1 ${
+                  darkMode ? "text-orange-200" : "text-orange-700"
+                }`}>
+                  (Antes de 01/08/2024)
+                </div>
+              )}
             </div>
           </div>
 
           {/* Nova seção para mostrar o retroativo */}
-          {retroativeMonths > 0 && (
+          {mesesRetroativosCalculados > 0 && (
             <div className={`mt-4 p-4 rounded-xl border-2 ${
               darkMode ? "bg-green-900/30 border-green-600" : "bg-green-50 border-green-400"
             }`}>
@@ -1176,6 +1222,13 @@ export default function App() {
                 darkMode ? "text-green-300" : "text-green-700"
               }`}>
                 💰 Cálculo do Retroativo
+                {isAntesDaDataBase && (
+                  <span className={`text-sm px-2 py-1 rounded-lg ${
+                    darkMode ? "bg-blue-800 text-blue-200" : "bg-blue-100 text-blue-800"
+                  }`}>
+                    Antes de 01/08/2024
+                  </span>
+                )}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className={`p-3 rounded-lg ${
@@ -1191,8 +1244,15 @@ export default function App() {
                 }`}>
                   <div className={`text-xs ${
                     darkMode ? "text-green-200" : "text-green-600"
-                  }`}>× {retroativeMonths} meses</div>
-                  <div className="text-sm font-medium">{brl(reajuste)} × {retroativeMonths}</div>
+                  }`}>× {mesesRetroativosCalculados} meses</div>
+                  <div className="text-sm font-medium">{brl(reajuste)} × {mesesRetroativosCalculados}</div>
+                  {isAntesDaDataBase && (
+                    <div className={`text-xs mt-1 ${
+                      darkMode ? "text-blue-300" : "text-blue-600"
+                    }`}>
+                      Regra: 12 meses para admissões antes de 01/08/2024
+                    </div>
+                  )}
                 </div>
                 <div className={`p-3 rounded-lg ${
                   darkMode ? "bg-green-800/50" : "bg-white"
@@ -1213,7 +1273,7 @@ export default function App() {
                 }`}>📋 Resumo dos Valores a Pagar:</h4>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Retroativo ({retroativeMonths} meses):</span>
+                    <span>Retroativo ({mesesRetroativosCalculados} meses):</span>
                     <span className="font-bold text-green-600">{brl(valorRetroativo)}</span>
                   </div>
                   <div className="flex justify-between">
