@@ -33,23 +33,24 @@ const monthLabel = (key) => {
 };
 
 // ---- defaults ----
-// Tabela 2024-2025 (Oficial SEAAC) - Valores da convenção anterior
+// Tabela 2024-2025 (Oficial SEAAC) - Valores conforme planilha real
 const defaultRows2024_2025 = [
   { key: "2024-08", p1: 6.13, p2: 5.38, fixa2: 61.17, fixo3: 938.91 },
-  { key: "2024-09", p1: 5.62, p2: 4.93, fixa2: 56.07, fixo3: 860.67 },
-  { key: "2024-10", p1: 5.11, p2: 4.48, fixa2: 50.98, fixo3: 782.43 },
-  { key: "2024-11", p1: 4.60, p2: 4.04, fixa2: 45.88, fixo3: 704.18 },
-  { key: "2024-12", p1: 4.09, p2: 3.59, fixa2: 40.78, fixo3: 625.94 },
-  { key: "2025-01", p1: 3.58, p2: 3.14, fixa2: 35.68, fixo3: 547.70 },
-  { key: "2025-02", p1: 3.07, p2: 2.69, fixa2: 30.59, fixo3: 469.46 },
-  { key: "2025-03", p1: 2.55, p2: 2.24, fixa2: 25.49, fixo3: 391.21 },
-  { key: "2025-04", p1: 2.04, p2: 1.79, fixa2: 20.39, fixo3: 312.97 },
-  { key: "2025-05", p1: 1.53, p2: 1.35, fixa2: 15.29, fixo3: 234.73 },
-  { key: "2025-06", p1: 1.02, p2: 0.90, fixa2: 10.20, fixo3: 156.49 },
-  { key: "2025-07", p1: 0.51, p2: 0.45, fixa2: 5.10, fixo3: 78.24 },
+  { key: "2024-09", p1: 5.69, p2: 4.98, fixa2: 56.73, fixo3: 869.73 },
+  { key: "2024-10", p1: 5.25, p2: 4.59, fixa2: 52.29, fixo3: 800.55 },
+  { key: "2024-11", p1: 4.81, p2: 4.20, fixa2: 47.85, fixo3: 731.37 },
+  { key: "2024-12", p1: 4.38, p2: 3.82, fixa2: 43.41, fixo3: 662.19 },
+  { key: "2025-01", p1: 3.94, p2: 3.44, fixa2: 38.97, fixo3: 593.01 },
+  { key: "2025-02", p1: 3.50, p2: 3.06, fixa2: 34.53, fixo3: 523.83 },
+  { key: "2025-03", p1: 3.06, p2: 2.68, fixa2: 30.09, fixo3: 454.65 },
+  { key: "2025-04", p1: 2.63, p2: 2.29, fixa2: 25.65, fixo3: 385.47 },
+  { key: "2025-05", p1: 2.19, p2: 1.91, fixa2: 21.21, fixo3: 316.29 },
+  { key: "2025-06", p1: 1.75, p2: 1.53, fixa2: 16.77, fixo3: 247.11 },
+  { key: "2025-07", p1: 1.31, p2: 1.15, fixa2: 12.33, fixo3: 177.93 },
 ];
 
-// Tabela 2025-2026 (Nova Convenção Coletiva) - Valores conforme documento fornecido
+// Tabela 2025-2026 (Nova Convenção Coletiva) - Valores conforme convenção oficial 2025/2026
+// IMPORTANTE: A convenção 2025/2026 usa a MESMA TABELA da 2024/2025 para empregados admitidos após agosto/2024
 const defaultRows2025_2026 = [
   { key: "2025-08", p1: 6.13, p2: 5.38, fixa2: 61.17, fixo3: 938.91 },
   { key: "2025-09", p1: 5.62, p2: 4.93, fixa2: 56.07, fixo3: 860.67 },
@@ -106,8 +107,8 @@ const defaultRows = [
 export default function App() {
   // principais
   const [salary, setSalary] = useState(0);
-  const [admission, setAdmission] = useState("2025-09"); // Atualizado para o novo período
-  const [baseDate, setBaseDate] = useState("2025-08"); // Nova data-base (01/08/2025)
+  const [admission, setAdmission] = useState("2024-08"); // Período de admissão
+  const [baseDate, setBaseDate] = useState("2024-08"); // Data-base (01/08/2024)
   const [retroativeMonths, setRetroativeMonths] = useState(2);
 
   // estados para mensagens
@@ -130,9 +131,9 @@ export default function App() {
   const [csvData, setCsvData] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
-  // limites de faixa atualizados para a convenção 2025/2026
-  const [cap1, setCap1] = useState(8157.41);
-  const [cap2, setCap2] = useState(16314.82); // Corrigido conforme nova convenção
+  // limites de faixa atualizados para a convenção 2024/2025 (valores reais)
+  const [cap1, setCap1] = useState(8157.41);    // Primeira faixa até R$ 8.157,41 (Convenção 2025/2026)
+  const [cap2, setCap2] = useState(16314.82);   // Segunda faixa até R$ 16.314,82 (Convenção 2025/2026)
 
   // tabela
   const [rows, setRows] = useState(() => {
@@ -185,7 +186,7 @@ export default function App() {
   }, [history]);
 
   // Verificar se a admissão é antes da data base atual 
-  // Para 2025/2026: nova data-base é 01/08/2025
+  // Para 2025/2026: data-base é 01/08/2025 (conforme Convenção oficial)
   const dataBase = new Date("2025-08-01");
   const [anoAdm, mesAdm] = admission.split("-").map(x => parseInt(x));
   const dataAdmissao = new Date(anoAdm, mesAdm - 1, 1);
@@ -214,9 +215,9 @@ export default function App() {
 
   // Verificar se a data de admissão existe na tabela
   if (isAntesDaDataBase || !entry) {
-    // Funcionários antes de 01/08/2025 ou sem entrada na tabela = reajuste integral (6,13%)
+    // Funcionários antes de 01/08/2024 ou sem entrada na tabela = reajuste integral (6,13%)
     const motivoRegraEspecial = isAntesDaDataBase ? 
-      "Admissão antes de 01/08/2025" : 
+      "Admissão antes de 01/08/2024" : 
       `Admissão ${monthLabel(admission)} não está na tabela proporcional`;
     
     if (salary <= cap1) {
@@ -226,8 +227,8 @@ export default function App() {
       reajuste = (salary * percent2) / 100 + parcelaFixa2;
       regraAplicada = `${motivoRegraEspecial} - Faixa 2: ${pct(percent2)} + ${brl(parcelaFixa2)} (reajuste integral)`;
     } else {
-      reajuste = valorFixo3;
-      regraAplicada = `${motivoRegraEspecial} - Faixa 3: ${brl(valorFixo3)} (reajuste integral)`;
+      reajuste = (salary * percent1) / 100;
+      regraAplicada = `${motivoRegraEspecial} - Faixa 3: ${pct(percent1)} sobre o salário (reajuste integral)`;
     }
   } else if (salary <= cap1) {
     reajuste = (salary * percent1) / 100;
@@ -236,8 +237,8 @@ export default function App() {
     reajuste = (salary * percent2) / 100 + parcelaFixa2;
     regraAplicada = `Faixa 2 (${brl(cap1)} a ${brl(cap2)}): ${pct(percent2)} + parcela fixa ${brl(parcelaFixa2)}`;
   } else {
-    reajuste = valorFixo3;
-    regraAplicada = `Faixa 3 (> ${brl(cap2)}): valor fixo ${brl(valorFixo3)}`;
+    reajuste = (salary * percent1) / 100;
+    regraAplicada = `Faixa 3 (> ${brl(cap2)}): ${pct(percent1)} sobre o salário`;
   }
 
   const novoSalario = salary + reajuste;
@@ -362,10 +363,10 @@ export default function App() {
         `Reajuste integral - Faixa 2: ${entryParaCalculo.p2}% + R$ ${entryParaCalculo.fixa2}` :
         `Faixa 2: ${entryParaCalculo.p2}% + R$ ${entryParaCalculo.fixa2}`;
     } else {
-      reaj = entryParaCalculo.fixo3;
+      reaj = (sal * entryParaCalculo.p1) / 100;
       regra = (isAntesDaDataBase || !entryCSV) ?
-        `Reajuste integral - Faixa 3: R$ ${entryParaCalculo.fixo3}` :
-        `Faixa 3: R$ ${entryParaCalculo.fixo3}`;
+        `Reajuste integral - Faixa 3: ${entryParaCalculo.p1}% sobre o salário` :
+        `Faixa 3: ${entryParaCalculo.p1}% sobre o salário`;
     }
 
     const retroativo = reaj * mesesRetro;
@@ -381,10 +382,10 @@ export default function App() {
   // Download exemplo CSV
   const downloadExampleCSV = () => {
     const exampleData = [
-      { salario: "5000", admissao: "2026-02" },
-      { salario: "10000", admissao: "2025-12" },
-      { salario: "20000", admissao: "2026-01" },
-      { salario: "3500", admissao: "2025-08" }
+      { salario: "5000", admissao: "2025-02" },
+      { salario: "10000", admissao: "2024-12" },
+      { salario: "20000", admissao: "2025-01" },
+      { salario: "3500", admissao: "2024-08" }
     ];
     
     // Configuração para garantir CSV correto
@@ -556,12 +557,12 @@ export default function App() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-xl md:text-3xl font-semibold">
-                Calculadora de Reajuste Proporcional (SEAAC 2025/2026)
+                Calculadora de Reajuste Proporcional (SEAAC 2024/2025)
               </h1>
               <p className={`text-sm md:text-base max-w-3xl ${
                 darkMode ? "text-gray-300" : "text-slate-600"
               }`}>
-                Calculadora atualizada com a nova Convenção Coletiva SEAAC 2025/2026. 
+                Calculadora atualizada com a Convenção Coletiva SEAAC 2024/2025. 
                 Preencha a tabela de percentuais/parcela fixa por mês de admissão (proporcional),
                 defina os limites salariais por faixa e informe o salário.
               </p>
@@ -631,8 +632,8 @@ export default function App() {
               <p className={`text-sm ${
                 darkMode ? "text-green-300" : "text-green-600"
               }`}>
-                <strong>De:</strong> 1º de agosto de 2025<br/>
-                <strong>Até:</strong> 31 de julho de 2026
+                <strong>De:</strong> 1º de agosto de 2024<br/>
+                <strong>Até:</strong> 31 de julho de 2025
               </p>
             </div>
             
@@ -648,7 +649,7 @@ export default function App() {
                 darkMode ? "text-blue-300" : "text-blue-600"
               }`}>
                 <strong>Mantida:</strong> 1º de agosto de cada ano<br/>
-                <strong>Atual:</strong> 01/08/2025
+                <strong>Atual:</strong> 01/08/2024
               </p>
             </div>
             
@@ -664,7 +665,7 @@ export default function App() {
                 darkMode ? "text-orange-300" : "text-orange-600"
               }`}>
                 <strong>Diferenças retroativas:</strong><br/>
-                Até 5º dia útil de novembro/2025
+                Até 5º dia útil de novembro/2024
               </p>
             </div>
           </div>
@@ -683,33 +684,28 @@ export default function App() {
           </div>
         </section>
 
-        {/* Pisos Salariais SEAAC 2025/2026 */}
+        {/* Pisos Salariais SEAAC 2024/2025 */}
         <section className={`rounded-2xl p-4 shadow ${
           darkMode ? "bg-gray-800" : "bg-white"
         }`}>
-          <h2 className="text-lg font-medium mb-3">💰 Pisos Salariais (Convenção 2025/2026)</h2>
+          <h2 className="text-lg font-medium mb-3">💰 Faixas Salariais (Convenção 2024/2025)</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className={`p-4 rounded-xl border-2 ${
               darkMode ? "border-blue-600 bg-blue-900/20" : "border-blue-200 bg-blue-50"
             }`}>
               <h3 className={`font-semibold mb-2 ${
                 darkMode ? "text-blue-400" : "text-blue-700"
               }`}>
-                Funções Específicas - R$ 1.980,00
+                Faixa 1 - Até R$ 2.640,00
               </h3>
-              <ul className={`text-sm space-y-1 ${
+              <p className={`text-sm ${
                 darkMode ? "text-blue-300" : "text-blue-600"
               }`}>
-                <li>• Office boy (CBO 4122-05)</li>
-                <li>• Recepcionista (CBO 4221-05)</li>
-                <li>• Faxineiro (CBO 5143-20)</li>
-                <li>• Porteiro (CBO 5174-10)</li>
-                <li>• Auxiliar de Serviços Gerais (CBO 5143)</li>
-                <li>• Copeira (CBO 5134-25)</li>
-                <li>• Atendente de Negócios (CBO 2532-25)</li>
-                <li>• Entrevistador de Pesquisas (CBO 4241-15)</li>
-              </ul>
+                <strong>Reajuste:</strong> Percentual sobre o salário<br/>
+                <strong>Agosto/2024:</strong> 6,13%<br/>
+                <strong>Julho/2025:</strong> 1,31%
+              </p>
             </div>
             
             <div className={`p-4 rounded-xl border-2 ${
@@ -718,28 +714,44 @@ export default function App() {
               <h3 className={`font-semibold mb-2 ${
                 darkMode ? "text-green-400" : "text-green-700"
               }`}>
-                Demais Funções - R$ 2.100,00
+                Faixa 2 - R$ 2.640,01 a R$ 11.000,00
               </h3>
               <p className={`text-sm ${
                 darkMode ? "text-green-300" : "text-green-600"
               }`}>
-                Todas as demais funções não listadas no grupo anterior, 
-                independentemente da idade do empregado e sujeitas ao 
-                regime de trabalho de tempo integral.
+                <strong>Reajuste:</strong> Percentual + Parcela Fixa<br/>
+                <strong>Agosto/2024:</strong> 5,38% + R$ 61,17<br/>
+                <strong>Julho/2025:</strong> 1,15% + R$ 12,33
+              </p>
+            </div>
+
+            <div className={`p-4 rounded-xl border-2 ${
+              darkMode ? "border-orange-600 bg-orange-900/20" : "border-orange-200 bg-orange-50"
+            }`}>
+              <h3 className={`font-semibold mb-2 ${
+                darkMode ? "text-orange-400" : "text-orange-700"
+              }`}>
+                Faixa 3 - Acima de R$ 11.000,00
+              </h3>
+              <p className={`text-sm ${
+                darkMode ? "text-orange-300" : "text-orange-600"
+              }`}>
+                <strong>Reajuste:</strong> Percentual da Faixa 1<br/>
+                <strong>Agosto/2024:</strong> 6,13%<br/>
+                <strong>Julho/2025:</strong> 1,31%
               </p>
             </div>
           </div>
 
-          <div className={`mt-4 p-3 rounded-lg border-l-4 border-yellow-400 ${
-            darkMode ? "bg-yellow-900/30" : "bg-yellow-50"
+          <div className={`mt-4 p-3 rounded-lg border-l-4 border-blue-400 ${
+            darkMode ? "bg-blue-900/30" : "bg-blue-50"
           }`}>
-            <h4 className={`font-medium ${darkMode ? "text-yellow-200" : "text-yellow-800"}`}>
-              📋 Importante - Cláusula Quarta (Pisos Salariais):
+            <h4 className={`font-medium ${darkMode ? "text-blue-200" : "text-blue-800"}`}>
+              📋 Importante - Sistema de Faixas SEAAC 2024/2025:
             </h4>
-            <p className={`text-sm mt-2 ${darkMode ? "text-yellow-300" : "text-yellow-700"}`}>
-              Os valores acima são os <strong>pisos salariais mínimos</strong> estabelecidos pela 
-              Convenção Coletiva 2025/2026. Empregadores devem garantir que nenhum funcionário 
-              receba salário inferior a estes valores, independentemente da idade.
+            <p className={`text-sm mt-2 ${darkMode ? "text-blue-300" : "text-blue-700"}`}>
+              O reajuste varia conforme a <strong>faixa salarial</strong> e o <strong>mês de admissão</strong>. 
+              Funcionários admitidos antes de 01/08/2024 recebem o reajuste integral (6,13%).
             </p>
           </div>
         </section>
@@ -1158,14 +1170,14 @@ export default function App() {
                       : "bg-white border-gray-300"
                   }`}
                   value={admission}
-                  min="2025-08"
-                  max="2026-07"
+                  min="2024-08"
+                  max="2025-07"
                   onChange={(e) => setAdmission(monthKey(e.target.value))}
                 />
                 <span className={`text-xs mt-1 ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}>
-                  Período disponível: Ago/2025 a Jul/2026
+                  Período disponível: Ago/2024 a Jul/2025
                 </span>
               </label>
               <label className="flex flex-col md:col-span-2">
@@ -1203,7 +1215,7 @@ export default function App() {
                 <span className={`text-xs mt-1 ${
                   darkMode ? "text-gray-400" : "text-gray-500"
                 }`}>
-                  Para admissões após 01/08/2025
+                  Para admissões após 01/08/2024
                 </span>
               </label>
             </div>
@@ -1216,9 +1228,9 @@ export default function App() {
                 📋 Regra SEAAC - Retroativo (Atualizada):
               </h4>
               <ul className={`text-sm mt-2 space-y-1 ${darkMode ? "text-blue-300" : "text-blue-700"}`}>
-                <li><strong>Antes de 01/08/2025:</strong> Reajuste integral (6,13%) + retroativo configurado</li>
-                <li><strong>Sem dados na tabela:</strong> Também recebe reajuste integral (ex: Mar/2025)</li>
-                <li><strong>Após 01/08/2025:</strong> Tabela proporcional + retroativo configurado</li>
+                <li><strong>Antes de 01/08/2024:</strong> Reajuste integral (6,13%) + retroativo configurado</li>
+                <li><strong>Sem dados na tabela:</strong> Também recebe reajuste integral (ex: Mar/2024)</li>
+                <li><strong>Após 01/08/2024:</strong> Tabela proporcional + retroativo configurado</li>
                 <li><strong>Todos recebem:</strong> Mesmo número de meses retroativos (padrão: 2 meses)</li>
               </ul>
             </div>
@@ -1439,7 +1451,7 @@ export default function App() {
                     <div className={`text-xs mt-1 ${
                       darkMode ? "text-blue-300" : "text-blue-600"
                     }`}>
-                      Regra: 12 meses para admissões antes de 01/08/2025
+                      Regra: 12 meses para admissões antes de 01/08/2024
                     </div>
                   )}
                 </div>
