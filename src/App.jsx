@@ -177,7 +177,8 @@ export default function App() {
   const entry = rows.find((r) => r.key === admission);
   
   // Para funcionários antes da data base, usar a entrada de agosto/2024 (12 meses completos)
-  const entryParaCalculo = isAntesDaDataBase ? 
+  // Se não encontrar a entrada na tabela (ex: Mar/2024), também tratar como "antes da data base"
+  const entryParaCalculo = (isAntesDaDataBase || !entry) ? 
     rows.find((r) => r.key === "2024-08") || rows[0] : 
     entry;
 
@@ -189,24 +190,27 @@ export default function App() {
   let reajuste = 0;
   let regraAplicada = "";
   
-  // Calcular meses retroativos: 12 para antes da data base, senão usar configurado
-  const mesesRetroativosCalculados = isAntesDaDataBase ? 12 : retroativeMonths;
+  // Calcular meses retroativos: sempre usar o valor configurado (padrão 2 meses)
+  // A planilha real mostra que todos recebem o mesmo número de meses retroativos
+  const mesesRetroativosCalculados = retroativeMonths;
 
   // Verificar se a data de admissão existe na tabela
-  if (isAntesDaDataBase) {
-    // Funcionários antes de 01/08/2024 = 12 meses de retroativo
+  if (isAntesDaDataBase || !entry) {
+    // Funcionários antes de 01/08/2024 ou sem entrada na tabela = reajuste integral (6,13%)
+    const motivoRegraEspecial = isAntesDaDataBase ? 
+      "Admissão antes de 01/08/2024" : 
+      `Admissão ${monthLabel(admission)} não está na tabela proporcional`;
+    
     if (salary <= cap1) {
       reajuste = (salary * percent1) / 100;
-      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 1: ${pct(percent1)} × 12 meses`;
+      regraAplicada = `${motivoRegraEspecial} - Faixa 1: ${pct(percent1)} (reajuste integral)`;
     } else if (salary <= cap2) {
       reajuste = (salary * percent2) / 100 + parcelaFixa2;
-      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 2: ${pct(percent2)} + ${brl(parcelaFixa2)} × 12 meses`;
+      regraAplicada = `${motivoRegraEspecial} - Faixa 2: ${pct(percent2)} + ${brl(parcelaFixa2)} (reajuste integral)`;
     } else {
       reajuste = valorFixo3;
-      regraAplicada = `Admissão antes de 01/08/2024 - Faixa 3: ${brl(valorFixo3)} × 12 meses`;
+      regraAplicada = `${motivoRegraEspecial} - Faixa 3: ${brl(valorFixo3)} (reajuste integral)`;
     }
-  } else if (!entry && admission) {
-    regraAplicada = `⚠️ Mês ${monthLabel(admission)} não encontrado na tabela! Adicione esta competência ou ajuste a data.`;
   } else if (salary <= cap1) {
     reajuste = (salary * percent1) / 100;
     regraAplicada = `Faixa 1 (≤ ${brl(cap1)}): ${pct(percent1)} sobre o salário`;
@@ -305,33 +309,54 @@ export default function App() {
   // Calcular reajuste para CSV
   const calculateCSVReajuste = (salario, admissaoCSV) => {
     const entryCSV = rows.find((r) => r.key === admissaoCSV);
-    if (!entryCSV) return { 
+    
+    // Verificar se é antes da data base
+    const dataBase = new Date("2024-08-01");
+    const [anoAdm, mesAdm] = admissaoCSV.split("-").map(x => parseInt(x));
+    const dataAdmissao = new Date(anoAdm, mesAdm - 1, 1);
+    const isAntesDaDataBase = dataAdmissao < dataBase;
+    
+    // Para funcionários antes da data base ou sem entrada na tabela, usar agosto/2024 (maior reajuste)
+    const entryParaCalculo = (isAntesDaDataBase || !entryCSV) ? 
+      rows.find((r) => r.key === "2024-08") || rows[0] :
+      entryCSV;
+    
+    if (!entryParaCalculo) return { 
       reajuste: 0, 
-      regraAplicada: "Mês não encontrado na tabela",
-      valorRetroativo: 0 
+      regraAplicada: "Erro: tabela não encontrada",
+      valorRetroativo: 0,
+      mesesRetroativo: 0
     };
 
     const sal = parseFloat(salario);
     let reaj = 0;
     let regra = "";
+    let mesesRetro = retroativeMonths; // Todos recebem o mesmo número de meses retroativos
 
     if (sal <= cap1) {
-      reaj = (sal * entryCSV.p1) / 100;
-      regra = `Faixa 1: ${entryCSV.p1}%`;
+      reaj = (sal * entryParaCalculo.p1) / 100;
+      regra = (isAntesDaDataBase || !entryCSV) ? 
+        `Reajuste integral - Faixa 1: ${entryParaCalculo.p1}%` :
+        `Faixa 1: ${entryParaCalculo.p1}%`;
     } else if (sal <= cap2) {
-      reaj = (sal * entryCSV.p2) / 100 + entryCSV.fixa2;
-      regra = `Faixa 2: ${entryCSV.p2}% + R$ ${entryCSV.fixa2}`;
+      reaj = (sal * entryParaCalculo.p2) / 100 + entryParaCalculo.fixa2;
+      regra = (isAntesDaDataBase || !entryCSV) ?
+        `Reajuste integral - Faixa 2: ${entryParaCalculo.p2}% + R$ ${entryParaCalculo.fixa2}` :
+        `Faixa 2: ${entryParaCalculo.p2}% + R$ ${entryParaCalculo.fixa2}`;
     } else {
-      reaj = entryCSV.fixo3;
-      regra = `Faixa 3: R$ ${entryCSV.fixo3}`;
+      reaj = entryParaCalculo.fixo3;
+      regra = (isAntesDaDataBase || !entryCSV) ?
+        `Reajuste integral - Faixa 3: R$ ${entryParaCalculo.fixo3}` :
+        `Faixa 3: R$ ${entryParaCalculo.fixo3}`;
     }
 
-    const retroativo = reaj * retroativeMonths;
+    const retroativo = reaj * mesesRetro;
 
     return { 
       reajuste: reaj, 
       regraAplicada: regra,
-      valorRetroativo: retroativo
+      valorRetroativo: retroativo,
+      mesesRetroativo: mesesRetro
     };
   };
 
@@ -876,7 +901,7 @@ export default function App() {
                   <tbody>
                     {csvData.map((row, idx) => {
                       const sal = parseFloat(row.salario);
-                      const { reajuste: reajCSV, regraAplicada: regraCSV, valorRetroativo: retroCSV } = calculateCSVReajuste(row.salario, row.admissao);
+                      const { reajuste: reajCSV, regraAplicada: regraCSV, valorRetroativo: retroCSV, mesesRetroativo: mesesCSV } = calculateCSVReajuste(row.salario, row.admissao);
                       return (
                         <tr key={idx} className={`${
                           darkMode 
@@ -888,7 +913,10 @@ export default function App() {
                           <td className="p-2 border">{monthLabel(row.admissao)}</td>
                           <td className="p-2 border font-semibold text-blue-600">{brl(reajCSV)}</td>
                           <td className="p-2 border font-semibold">{brl(sal + reajCSV)}</td>
-                          <td className="p-2 border font-semibold text-green-600">{brl(retroCSV)}</td>
+                          <td className="p-2 border">
+                            <div className="font-semibold text-green-600">{brl(retroCSV)}</div>
+                            <div className="text-xs text-gray-500">({mesesCSV} meses)</div>
+                          </td>
                           <td className="p-2 border text-xs">{regraCSV}</td>
                         </tr>
                       );
@@ -1026,11 +1054,13 @@ export default function App() {
               darkMode ? "bg-blue-900/30" : "bg-blue-50"
             }`}>
               <h4 className={`font-medium ${darkMode ? "text-blue-200" : "text-blue-800"}`}>
-                📋 Regra SEAAC - Retroativo:
+                📋 Regra SEAAC - Retroativo (Atualizada):
               </h4>
               <ul className={`text-sm mt-2 space-y-1 ${darkMode ? "text-blue-300" : "text-blue-700"}`}>
-                <li><strong>Antes de 01/08/2024:</strong> Sempre 12 meses de retroativo (reajuste integral)</li>
-                <li><strong>Após 01/08/2024:</strong> Tabela proporcional + meses configurados acima</li>
+                <li><strong>Antes de 01/08/2024:</strong> Reajuste integral (6,13%) + retroativo configurado</li>
+                <li><strong>Sem dados na tabela:</strong> Também recebe reajuste integral (ex: Mar/2024)</li>
+                <li><strong>Após 01/08/2024:</strong> Tabela proporcional + retroativo configurado</li>
+                <li><strong>Todos recebem:</strong> Mesmo número de meses retroativos (padrão: 2 meses)</li>
               </ul>
             </div>
           </div>
@@ -1203,11 +1233,11 @@ export default function App() {
                 darkMode ? "text-orange-300" : "text-orange-600"
               }`}>Meses retroativos</div>
               <div className="text-lg font-semibold">{mesesRetroativosCalculados} meses</div>
-              {isAntesDaDataBase && (
+              {(isAntesDaDataBase || !entry) && (
                 <div className={`text-xs mt-1 ${
                   darkMode ? "text-orange-200" : "text-orange-700"
                 }`}>
-                  (Antes de 01/08/2024)
+                  (Reajuste integral)
                 </div>
               )}
             </div>
